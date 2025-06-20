@@ -215,7 +215,7 @@ def create_icns_file(icons, sizes, output_path="app_icon.icns"):
                 subprocess.check_call([
                     "iconutil", "-c", "icns", str(iconset_dir), "-o", output_path
                 ])
-                print(f"成功创建ICNS文件: {output_path}")
+                print(f"Successfully created ICNS file: {output_path}")
                 return True
             except subprocess.CalledProcessError:
                 print("iconutil执行失败，尝试替代方法...")
@@ -228,7 +228,7 @@ def create_icns_file(icons, sizes, output_path="app_icon.icns"):
             return True
             
     except Exception as e:
-        print(f"创建ICNS失败: {e}")
+        print(f"Failed to create ICNS: {e}")
         return False
     finally:
         # 清理临时文件
@@ -238,7 +238,7 @@ def create_icns_file(icons, sizes, output_path="app_icon.icns"):
 
 def create_mac_icon():
     """主函数：创建macOS应用图标"""
-    print("正在创建macOS应用图标...")
+    print("Creating macOS application icon...")
     
     try:
         # 创建图标
@@ -246,15 +246,15 @@ def create_mac_icon():
         
         # 创建ICNS文件
         if create_icns_file(icons, sizes):
-            print("macOS应用图标创建成功！")
-            print("文件位置: app_icon.icns")
+            print("macOS application icon created successfully!")
+            print("File location: app_icon.icns")
             return True
         else:
-            print("图标创建失败")
+            print("Icon creation failed")
             return False
             
     except Exception as e:
-        print(f"创建图标时发生错误: {e}")
+        print(f"Error occurred while creating icon: {e}")
         return False
 
 if __name__ == "__main__":

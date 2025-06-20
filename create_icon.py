@@ -10,8 +10,8 @@ try:
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
-    print("PIL (Pillow) 未安装，无法创建图标")
-    print("可以使用: pip install Pillow")
+    print("PIL (Pillow) not installed, cannot create icon")
+    print("Install with: pip install Pillow")
 
 def create_simple_icon():
     """创建一个简单的应用图标"""
@@ -75,21 +75,21 @@ def create_simple_icon():
         
         # 保存ICO文件
         icons[0].save('app_icon.ico', format='ICO', sizes=[(img.width, img.height) for img in icons])
-        print("图标文件已创建: app_icon.ico")
+        print("Icon file created: app_icon.ico")
         return True
         
     except Exception as e:
-        print(f"保存图标失败: {e}")
+        print(f"Failed to save icon: {e}")
         return False
 
 def main():
-    """主函数"""
-    print("=== 创建应用图标 ===")
+    """Main function"""
+    print("=== Creating Application Icon ===")
     if create_simple_icon():
-        print("图标创建成功！")
+        print("Icon created successfully!")
     else:
-        print("图标创建失败")
-        print("你可以手动创建一个名为 app_icon.ico 的图标文件")
+        print("Icon creation failed")
+        print("You can manually create an app_icon.ico file")
 
 if __name__ == "__main__":
     main() 

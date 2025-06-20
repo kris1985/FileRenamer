@@ -15,16 +15,16 @@ def check_pyinstaller():
     """检查PyInstaller是否已安装"""
     try:
         import PyInstaller
-        print(f"PyInstaller版本: {PyInstaller.__version__}")
+        print(f"PyInstaller version: {PyInstaller.__version__}")
         return True
     except ImportError:
-        print("PyInstaller未安装，正在安装...")
+        print("PyInstaller not installed, installing...")
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
-            print("PyInstaller安装成功")
+            print("PyInstaller installed successfully")
             return True
         except subprocess.CalledProcessError:
-            print("PyInstaller安装失败，请手动安装: pip install pyinstaller")
+            print("PyInstaller installation failed, please install manually: pip install pyinstaller")
             return False
 
 def clean_build_dirs():
@@ -33,12 +33,12 @@ def clean_build_dirs():
     for dir_name in dirs_to_clean:
         if os.path.exists(dir_name):
             shutil.rmtree(dir_name)
-            print(f"已清理目录: {dir_name}")
+            print(f"Cleaned directory: {dir_name}")
     
     # 清理.spec文件
     for spec_file in Path(".").glob("*.spec"):
         spec_file.unlink()
-        print(f"已删除: {spec_file}")
+        print(f"Deleted: {spec_file}")
 
 def create_spec_file():
     """创建PyInstaller规格文件"""
@@ -90,11 +90,11 @@ exe = EXE(
     
     with open("FileRenamer.spec", "w", encoding="utf-8") as f:
         f.write(spec_content)
-    print("已创建PyInstaller规格文件: FileRenamer.spec")
+    print("Created PyInstaller spec file: FileRenamer.spec")
 
 def build_executable():
     """构建可执行文件"""
-    print("开始构建可执行文件...")
+    print("Starting executable build...")
     try:
         # 使用spec文件构建
         subprocess.check_call([
@@ -102,17 +102,17 @@ def build_executable():
             "--clean",
             "FileRenamer.spec"
         ])
-        print("可执行文件构建成功！")
+        print("Executable built successfully!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"构建失败: {e}")
+        print(f"Build failed: {e}")
         return False
 
 def copy_additional_files():
     """复制额外的文件到dist目录"""
     dist_dir = Path("dist")
     if not dist_dir.exists():
-        print("dist目录不存在")
+        print("dist directory does not exist")
         return
     
     # 要复制的文件
@@ -125,20 +125,20 @@ def copy_additional_files():
     for file_name in files_to_copy:
         if os.path.exists(file_name):
             shutil.copy2(file_name, dist_dir)
-            print(f"已复制: {file_name}")
+            print(f"Copied: {file_name}")
 
 def create_icon():
     """创建应用图标"""
-    print("正在创建应用图标...")
+    print("Creating application icon...")
     try:
         import create_icon
         if create_icon.create_simple_icon():
             return True
         else:
-            print("图标创建失败，将使用默认图标")
+            print("Icon creation failed, will use default icon")
             return False
     except Exception as e:
-        print(f"图标创建失败: {e}")
+        print(f"Icon creation failed: {e}")
         return False
 
 def update_spec_file_with_icon():
@@ -155,11 +155,11 @@ def update_spec_file_with_icon():
         with open("FileRenamer.spec", "w", encoding="utf-8") as f:
             f.write(content)
         
-        print("已更新spec文件以包含图标")
+        print("Updated spec file to include icon")
 
 def main():
     """主函数"""
-    print("=== Windows打包脚本 ===")
+    print("=== Windows Build Script ===")
     print()
     
     # 检查PyInstaller
@@ -184,13 +184,13 @@ def main():
         copy_additional_files()
         
         print()
-        print("=== 构建完成 ===")
-        print("可执行文件位置: dist/文件批量重命名工具.exe")
-        print("可以将整个dist文件夹分发给用户")
+        print("=== Build Complete ===")
+        print("Executable location: dist/文件批量重命名工具.exe")
+        print("You can distribute the entire dist folder to users")
         print()
-        print("如需创建安装包，请运行 Inno Setup 并使用 installer_script.iss 文件")
+        print("To create installer, run Inno Setup with installer_script.iss file")
     else:
-        print("构建失败")
+        print("Build failed")
 
 if __name__ == "__main__":
     main() 
