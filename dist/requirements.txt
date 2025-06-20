@@ -1,0 +1,15 @@
+# 文件批量重命名工具依赖
+
+# GUI界面（Python内置，无需安装）
+# tkinter
+
+# 标准库（Python内置，无需安装）
+# os
+# shutil
+# datetime
+# pathlib
+# threading
+# concurrent.futures
+
+# 本项目不需要额外的第三方依赖
+# 所有功能都使用Python标准库实现 
