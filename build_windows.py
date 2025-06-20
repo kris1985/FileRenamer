@@ -71,7 +71,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='文件批量重命名工具',
+    name='FileRenamer',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -122,10 +122,21 @@ def copy_additional_files():
         "启动应用.bat"
     ]
     
+    files_copied = 0
     for file_name in files_to_copy:
         if os.path.exists(file_name):
-            shutil.copy2(file_name, dist_dir)
-            print(f"Copied: {file_name}")
+            try:
+                shutil.copy2(file_name, dist_dir)
+                files_copied += 1
+                # 避免打印中文文件名，改为打印数量
+                if file_name.endswith('.bat'):
+                    print("Copied: startup script")
+                else:
+                    print(f"Copied: {file_name}")
+            except Exception as e:
+                print(f"Failed to copy file: {e}")
+    
+    print(f"Total files copied: {files_copied}")
 
 def create_icon():
     """创建应用图标"""
@@ -185,7 +196,7 @@ def main():
         
         print()
         print("=== Build Complete ===")
-        print("Executable location: dist/文件批量重命名工具.exe")
+        print("Executable location: dist/FileRenamer.exe")
         print("You can distribute the entire dist folder to users")
         print()
         print("To create installer, run Inno Setup with installer_script.iss file")
