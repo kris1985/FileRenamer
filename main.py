@@ -107,7 +107,7 @@ class FileRenamerApp:
         notebook.add(frame, text="批量重命名")
         
         # 说明
-        desc_label = ttk.Label(frame, text="功能：批量重命名文件为 品牌_文件夹名称_yyyy年MM月dd日_四位编号 格式（按修改时间排序，最早为0001）", 
+        desc_label = ttk.Label(frame, text="功能：批量重命名文件为 品牌_文件夹名称_yyyy年MM月dd日_四位编号_副图1 格式（全局按修改时间排序，最早为0001）", 
                               font=("Arial", 10), foreground="blue")
         desc_label.grid(row=0, column=0, columnspan=3, sticky=tk.W, pady=(0, 20))
         
@@ -143,7 +143,7 @@ class FileRenamerApp:
         notebook.add(frame, text="清理文件名")
         
         # 说明
-        desc_label = ttk.Label(frame, text="功能：清理文件名中的'副图_1'字符串", 
+        desc_label = ttk.Label(frame, text="功能：清理文件名中的指定字符串（如'_副图1'）", 
                               font=("Arial", 10), foreground="blue")
         desc_label.grid(row=0, column=0, columnspan=3, sticky=tk.W, pady=(0, 20))
         
@@ -158,7 +158,7 @@ class FileRenamerApp:
         # 自定义替换字符串
         ttk.Label(frame, text="要替换的字符串:").grid(row=2, column=0, sticky=tk.W, pady=5)
         self.replace_string_var = tk.StringVar()
-        self.replace_string_var.set("副图_1")
+        self.replace_string_var.set("_副图1")
         ttk.Entry(frame, textvariable=self.replace_string_var, width=30).grid(
             row=2, column=1, sticky=tk.W, padx=(10, 5), pady=5)
         
@@ -297,11 +297,12 @@ class FileRenamerApp:
     def _batch_rename_worker(self, folder, brand, date_str):
         """批量重命名的工作线程"""
         try:
-            self.status_var.set("正在批量重命名文件...")
+            self.status_var.set("正在扫描所有文件...")
             
-            renamed_count = 0
+            # 第一步：收集所有文件信息
+            all_files_info = []
             
-            # 遍历文件夹和子文件夹
+            # 遍历所有文件夹和子文件夹，收集文件信息
             for root, dirs, files in os.walk(folder):
                 if not files:  # 如果当前文件夹没有文件，跳过
                     continue
@@ -309,48 +310,51 @@ class FileRenamerApp:
                 # 获取当前文件夹名称
                 folder_name = os.path.basename(root)
                 
-                # 获取文件信息并按修改时间排序
-                file_info_list = []
                 for file in files:
                     file_path = os.path.join(root, file)
                     try:
                         # 获取文件的修改时间
                         mtime = os.path.getmtime(file_path)
-                        file_info_list.append((file, file_path, mtime))
+                        all_files_info.append((file, file_path, mtime, folder_name))
                     except Exception as e:
                         print(f"获取文件时间失败: {file}, 错误: {e}")
                         continue
-                
-                # 按修改时间排序，最早的在前面
-                file_info_list.sort(key=lambda x: x[2])
-                
-                # 为当前文件夹中的文件编号
-                counter = 1
-                
-                for file, file_path, mtime in file_info_list:
-                    try:
-                        # 获取文件扩展名
-                        file_ext = os.path.splitext(file)[1]
+            
+            self.status_var.set("正在按修改时间排序...")
+            
+            # 第二步：按修改时间全局排序，最早的在前面
+            all_files_info.sort(key=lambda x: x[2])
+            
+            self.status_var.set("正在批量重命名文件...")
+            
+            # 第三步：全局编号重命名
+            renamed_count = 0
+            counter = 1
+            
+            for file, file_path, mtime, folder_name in all_files_info:
+                try:
+                    # 获取文件扩展名
+                    file_ext = os.path.splitext(file)[1]
+                    
+                    # 生成新文件名：品牌_文件夹名称_日期_四位编号_副图1
+                    new_name = f"{brand}_{folder_name}_{date_str}_{counter:04d}_副图1{file_ext}"
+                    new_path = os.path.join(os.path.dirname(file_path), new_name)
+                    
+                    # 如果新文件名已存在，跳过
+                    if os.path.exists(new_path):
+                        print(f"文件已存在，跳过: {new_path}")
+                        continue
                         
-                        # 生成新文件名
-                        new_name = f"{brand}_{folder_name}_{date_str}_{counter:04d}{file_ext}"
-                        new_path = os.path.join(root, new_name)
-                        
-                        # 如果新文件名已存在，跳过
-                        if os.path.exists(new_path):
-                            print(f"文件已存在，跳过: {new_path}")
-                            continue
-                            
-                        # 重命名文件
-                        os.rename(file_path, new_path)
-                        renamed_count += 1
-                        counter += 1
-                        
-                    except Exception as e:
-                        print(f"重命名文件失败: {file}, 错误: {e}")
+                    # 重命名文件
+                    os.rename(file_path, new_path)
+                    renamed_count += 1
+                    counter += 1
+                    
+                except Exception as e:
+                    print(f"重命名文件失败: {file}, 错误: {e}")
             
             self.status_var.set(f"批量重命名完成，共处理 {renamed_count} 个文件")
-            messagebox.showinfo("成功", f"批量重命名完成！\n共重命名 {renamed_count} 个文件")
+            messagebox.showinfo("成功", f"批量重命名完成！\n共重命名 {renamed_count} 个文件\n命名格式: 品牌_文件夹名_日期_编号_副图1")
             
         except Exception as e:
             self.status_var.set("重命名失败")
