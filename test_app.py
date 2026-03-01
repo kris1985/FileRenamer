@@ -67,26 +67,13 @@ def print_directory_tree(path, prefix=""):
             print_directory_tree(item, next_prefix)
 
 
-def create_copy_target():
-    """创建复制目标文件夹"""
-    target_dir = Path("copy_target")
-    if not target_dir.exists():
-        target_dir.mkdir()
-    print(f"复制目标文件夹已创建: {target_dir.absolute()}")
-
-
 def cleanup_test_files():
     """清理测试文件"""
     test_dir = Path("test_files")
-    target_dir = Path("copy_target")
     
     if test_dir.exists():
         shutil.rmtree(test_dir)
         print("已删除测试文件夹")
-    
-    if target_dir.exists():
-        shutil.rmtree(target_dir)
-        print("已删除目标文件夹")
 
 
 def main():
@@ -97,28 +84,25 @@ def main():
     while True:
         print("\n请选择操作:")
         print("1. 创建测试文件结构")
-        print("2. 创建复制目标文件夹")
-        print("3. 显示当前文件结构")
-        print("4. 清理所有测试文件")
-        print("5. 启动主应用程序")
+        print("2. 显示当前文件结构")
+        print("3. 清理所有测试文件")
+        print("4. 启动主应用程序")
         print("0. 退出")
         
-        choice = input("\n请输入选择 (0-5): ").strip()
+        choice = input("\n请输入选择 (0-4): ").strip()
         
         if choice == "1":
             create_test_structure()
         elif choice == "2":
-            create_copy_target()
-        elif choice == "3":
             test_dir = Path("test_files")
             if test_dir.exists():
                 print(f"\n当前测试文件结构 ({test_dir.absolute()}):")
                 print_directory_tree(test_dir)
             else:
                 print("测试文件夹不存在，请先创建测试文件结构")
-        elif choice == "4":
+        elif choice == "3":
             cleanup_test_files()
-        elif choice == "5":
+        elif choice == "4":
             print("启动主应用程序...")
             import main
             main.main()
