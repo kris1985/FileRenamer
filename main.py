@@ -10,9 +10,21 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 import threading
+
+
+def natural_sort_key(s):
+    """
+    Windows 风格自然排序 key：将数字序列作为整体比较
+    例如：file1, file2, file10 排序为 1, 2, 10（而非 1, 10, 2）
+    与 Windows 文件资源管理器排序规则一致
+    """
+    def atoi(text):
+        return int(text) if text.isdigit() else text.lower()
+    return [atoi(c) for c in re.split(r'(\d+)', str(s))]
 
 
 class FileRenamerApp:
@@ -68,7 +80,7 @@ class FileRenamerApp:
         notebook.add(frame, text="批量重命名")
         
         # 说明
-        desc_label = ttk.Label(frame, text="功能：批量重命名文件为 品牌_文件夹名称_yyyy年MM月dd日_五位编号_副图1 格式（全局按修改时间排序）", 
+        desc_label = ttk.Label(frame, text="功能：批量重命名文件为 品牌_文件夹名称_yyyy年MM月dd日_五位编号_副图1 格式", 
                               font=("Arial", 10), foreground="blue")
         desc_label.grid(row=0, column=0, columnspan=3, sticky=tk.W, pady=(0, 20))
         
@@ -98,9 +110,17 @@ class FileRenamerApp:
         ttk.Entry(frame, textvariable=self.start_number_var, width=15).grid(
             row=3, column=1, sticky=tk.W, padx=(10, 5), pady=5)
         
+        # 排序选项（默认按文件名，与 Windows 文件资源管理器排序一致）
+        ttk.Label(frame, text="排序:").grid(row=4, column=0, sticky=tk.W, pady=5)
+        self.sort_var = tk.StringVar(value="filename")
+        sort_frame = ttk.Frame(frame)
+        sort_frame.grid(row=4, column=1, sticky=tk.W, padx=(10, 5), pady=5)
+        ttk.Radiobutton(sort_frame, text="文件名", variable=self.sort_var, value="filename").grid(row=0, column=0, padx=(0, 15))
+        ttk.Radiobutton(sort_frame, text="日期", variable=self.sort_var, value="date").grid(row=0, column=1)
+        
         # 执行按钮
         ttk.Button(frame, text="开始批量重命名", command=self.batch_rename,
-                  style="Accent.TButton").grid(row=4, column=1, pady=20)
+                  style="Accent.TButton").grid(row=5, column=1, pady=20)
         
         # 配置网格权重
         frame.columnconfigure(1, weight=1)
@@ -184,11 +204,14 @@ class FileRenamerApp:
             messagebox.showerror("错误", "编号起始值必须是有效的数字")
             return
             
+        # 获取排序方式（文件名 或 日期）
+        sort_by = self.sort_var.get()
+        
         # 在新线程中执行
         threading.Thread(target=self._batch_rename_worker, 
-                        args=(folder, brand, date_str, start_number), daemon=True).start()
+                        args=(folder, brand, date_str, start_number, sort_by), daemon=True).start()
         
-    def _batch_rename_worker(self, folder, brand, date_str, start_number):
+    def _batch_rename_worker(self, folder, brand, date_str, start_number, sort_by="filename"):
         """批量重命名的工作线程"""
         try:
             self.status_var.set("正在扫描所有文件...")
@@ -216,10 +239,15 @@ class FileRenamerApp:
                         print(f"获取文件时间失败: {file}, 错误: {e}")
                         continue
             
-            self.status_var.set("正在按修改时间排序...")
-            
-            # 第二步：按修改时间全局排序，最早的在前面
-            all_files_info.sort(key=lambda x: x[2])
+            # 第二步：按选定方式排序（与 Windows 文件资源管理器规则一致）
+            if sort_by == "date":
+                self.status_var.set("正在按修改时间排序...")
+                # 按修改时间升序，最早的在前面
+                all_files_info.sort(key=lambda x: x[2])
+            else:
+                self.status_var.set("正在按文件名排序...")
+                # 仅按文件名自然排序（Windows 风格），目录路径不参与
+                all_files_info.sort(key=lambda x: natural_sort_key(x[0]))
             
             self.status_var.set("正在批量重命名文件...")
             
